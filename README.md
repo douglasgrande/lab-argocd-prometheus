@@ -204,24 +204,29 @@ kubectl apply -f valkey-standalone.yaml
 
 ## 📦 Estrutura do repositório
 ```
-├── appset/                               # Manifestos do ArgoCD (ApplicationSet) para a implantação
-│   ├── prometheus-cdrs.yaml              # Configurações para CRDs do Prometheus
-│   └── prometheus.yaml                   # Configurações do Prometheus
-├── values/                               # Diretório de definições do prometheus
-│   ├── core-values/                      # Diretório dos values comuns do prometheus para todos os clusteres
-│   |   |── exporters/                    # Diretório dos values dos exporters comuns do prometheus
-│   |   |    └── default-exporters.yaml   # Values dos exporters comuns do prometheus
-│   |   |── jobs/                         # Diretório dos values das jobs comuns do prometheus
-│   |   |── rules/                        # Diretório dos values das rules de alertas comuns do prometheus
-│   |   |    └── default-rules.yaml       # Values das rules de alertas comuns do prometheus
-│   |   └── default-prometheus.yaml       # Values do prometheus
-│   └── custom-values/                    # Diretório de definições específicas por cluster do prometheus
-│       ├── exporters/                    # Diretório dos values exporters específicos por cluster do prometheus
-│       ├── jobs/                         # Diretório dos values das jobs de alertas específicas por cluster do prometheus
-│       |    └── in-cluster-jobs.yaml     # Values das jobs de alertas específicas por cluster do prometheus
-│       ├── rules/                        # Diretório dos values das rules de alertas específicas por cluster do prometheus
-│       |    └── in-cluster-rules.yaml    # Values das rules de alertas específicas por cluster do prometheus
-│       └── in-cluster.yaml               # Values de definições específicas por cluster do prometheus
+├── appset/                                           # Manifestos do ArgoCD (ApplicationSet) para a implantação
+│   ├── prometheus-cdrs.yaml                          # Configurações para CRDs do Prometheus
+│   └── prometheus.yaml                               # Configurações do Prometheus
+├── core-values                                       # Diretório dos values comuns do prometheus para todos os clusteres
+│   └── prometheus
+│       ├── default-prometheus-alertmanager.yaml      # Values do prometheus relacionados ao endpoint do alertmanager     
+│       ├── default-prometheus.yaml                   # Values do prometheus
+│       ├── exporters                                 # Diretório dos values dos exporters comuns do prometheus
+│       │   └── default-exporters.yaml
+│       ├── jobs                                      # Diretório dos values das jobs de alertas comuns do prometheus
+│       │   └── default-jobs.yaml
+│       └── rules                                     # Diretório dos values das rules de alertas comuns do prometheus
+│           └── default-rules.yaml
+├── custom-values                                     # Diretório de definições específicas por cluster do prometheus
+|   └── prometheus
+|       └── in-cluster                                # Diretório de definições específicas cluster "in-cluster"
+|           ├── exporters                             # Diretório dos values exporters específicos por cluster do prometheus
+|           │   └── exporters.yaml
+|           ├── jobs                                  # Diretório dos values das jobs de alertas específicas por cluster do prometheus
+|           │   └── jobs.yaml
+|           ├── prometheus.yaml                       # Values de definições específicas do cluster "in-cluster"
+|           └── rules                                 # Diretório dos values das rules de alertas específicas por cluster do prometheus
+|               └── rules.yaml
 └── README.md
 ```
 ## 🚀 Como Usar
