@@ -1,4 +1,4 @@
-# argocd-prometheus-alertmanager
+# argocd-prometheus
 
 ## 🌟 Visão Geral
 Este lab visa fornecer uma configuração para monitorar aplicações e infraestrutura em um cluster Kubernetes. Ele demonstra como:
