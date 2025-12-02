@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: stakater-reloader
+  namespace: argocd 
+spec:
+  project: default
+  
+  source:
+    repoURL: 'https://github.com/douglasgrande/lab-argocd-prometheus.git'
+    targetRevision: alertmanager-app 
+    path: app-values/config-reloader
+
+  destination:
+    server: https://kubernetes.default.svc 
+    namespace: reloader 
+
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
