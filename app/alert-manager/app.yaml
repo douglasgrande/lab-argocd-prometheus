@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: alertmanager-config-secret
+  name: alertmanager
   namespace: argocd
 spec:
   project: default
@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: 'https://github.com/douglasgrande/lab-argocd-prometheus.git'
     targetRevision: alertmanager-app
-    path: app-values/alertmanager-config-secret
+    path: app-values/alertmanager
 
   destination:
     server: https://kubernetes.default.svc
