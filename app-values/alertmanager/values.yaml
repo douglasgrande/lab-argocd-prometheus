@@ -5,6 +5,8 @@ metadata:
   namespace: monitoring
   labels:
     app.kubernetes.io/name: alertmanager
+  annotations:
+    configmap.reloader.stakater.com/reload: "alertmanager-config-secret"
 
 spec:
   serviceName: alertmanager
