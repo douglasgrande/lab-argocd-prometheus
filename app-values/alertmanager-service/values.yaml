@@ -4,7 +4,7 @@ metadata:
   name: alertmanager
   namespace: monitoring
   labels:
-    app: alertmanager
+    app.kubernetes.io/name: alertmanager
 spec:
   type: ClusterIP
   ports:
@@ -13,4 +13,4 @@ spec:
       targetPort: web
       protocol: TCP
   selector:
-    app: alertmanager
+    app.kubernetes.io/name: alertmanager
