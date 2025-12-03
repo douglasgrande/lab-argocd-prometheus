@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: alertmanager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alertmanager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alertmanager
+    spec:
+      containers:
+      # Definition of --storage.path:
+      #   Argument in Alertmanager specifies the base directory where Alertmanager stores its data. This data includes crucial information such as:
+      #   - Notification states: Alertmanager tracks which notifications have been sent for specific alerts to prevent repeated notifications
+      #   - Silences: Information about active silences, which suppress notifications for matching alerts.
+      # Importance of --storage.path:
+      #   - Persistence: This path ensures that Alertmanager's state is preserved across restarts.
+      #   - Data integrity: It defines where Alertmanager can safely store and retrieve its operational data.
+      - name: alertmanager
+        image: quay.io/prometheus/alertmanager:v0.29.0
+        args:
+        - --config.file=/etc/alertmanager/config.yaml
+        - --storage.path=/alertmanager/data
+        - --web.listen-address=0.0.0.0:9093
+        ports:
+        - containerPort: 9093
+          name: web
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/alertmanager
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 500Mi
+      
+      - name: config-reloader
+        image: quay.io/prometheus-operator/prometheus-config-reloader:v0.87.0
+        args:
+          - --watch-interval=30s
+          - --config-file=/etc/alertmanager/config.yaml
+          - --reload-url=http://127.0.0.1:9093/-/reload
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/alertmanager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+      volumes:
+      - name: config-volume
+        secret:
+            secretName: alertmanager-config-secret
