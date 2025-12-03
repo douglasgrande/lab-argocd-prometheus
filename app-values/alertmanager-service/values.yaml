@@ -13,4 +13,4 @@ spec:
       targetPort: web
       protocol: TCP
   selector:
-    app.kubernetes.io/name: alertmanager
+    app: alertmanager
