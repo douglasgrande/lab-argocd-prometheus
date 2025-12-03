@@ -124,7 +124,7 @@ metadata:
   name: reloader-reloader
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 2
   selector:
     matchLabels:
