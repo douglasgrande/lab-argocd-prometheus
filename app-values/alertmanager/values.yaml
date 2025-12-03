@@ -8,6 +8,9 @@ metadata:
   annotations:
     checksum/config: "{{ include (print $.Template.BasePath) }}"
 
+configmapReload:
+  enabled: true
+
 spec:
   serviceName: alertmanager
   replicas: 2
