@@ -21,7 +21,7 @@ spec:
         image: quay.io/prometheus/alertmanager:v0.27.0 # Use a tag de versão mais recente/desejada
         args:
         - --config.file=/etc/alertmanager/config.yaml
-        - --storage.path=/alertmanager
+        - --storage.path=/etc/alertmanager
         # Configurações para High Availability (HA)
         - --cluster.listen-address=0.0.0.0:6783
         - --web.listen-address=0.0.0.0:9093 # A porta 9093 será acessada pelo Sidecar
@@ -33,8 +33,6 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /etc/alertmanager
-        - name: storage
-          mountPath: /alertmanager
         resources:
           limits:
             memory: "128Mi"
@@ -45,7 +43,7 @@ spec:
       - name: config-reloader
         image: quay.io/prometheus-operator/prometheus-config-reloader:v0.87.0 # Use uma tag de versão estável
         args:
-          - --watch-interval=3m # Intervalo de verificação de alterações
+          - --watch-interval=30s # Intervalo de verificação de alterações
           - --config-file=/etc/alertmanager/config.yaml
           - --reload-url=http://127.0.0.1:9093/-/reload # Webhook para o Alertmanager
         volumeMounts:
@@ -61,11 +59,3 @@ spec:
       - name: config-volume
         secret:
             secretName: alertmanager-config-secret
-  volumeClaimTemplates:
-  - metadata:
-      name: storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
