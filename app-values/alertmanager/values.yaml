@@ -2,50 +2,70 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: alertmanager
-  namespace: monitoring
   labels:
-    app.kubernetes.io/name: alertmanager
+    app: alertmanager
 spec:
-  serviceName: alertmanager
-  replicas: 2
+  serviceName: "alertmanager-headless"
+  replicas: 3
   selector:
     matchLabels:
-      app.kubernetes.io/name: alertmanager
+      app: alertmanager
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: alertmanager
+        app: alertmanager
     spec:
       containers:
+      # 1. Container Principal do Alertmanager
       - name: alertmanager
-        image: quay.io/prometheus/alertmanager:v0.29.0
+        image: quay.io/prometheus/alertmanager:v0.27.0 # Use a tag de versão mais recente/desejada
         args:
-          - --config.file=/etc/alertmanager/config/config.yaml
-          - --storage.path=/alertmanager
-          - --web.listen-address=0.0.0.0:9093 # A porta 9093 será acessada pelo Sidecar
+        - --config.file=/etc/alertmanager/config.yaml
+        - --storage.path=/alertmanager
+        # Configurações para High Availability (HA)
+        - --cluster.listen-address=0.0.0.0:6783
+        - --web.listen-address=0.0.0.0:9093 # A porta 9093 será acessada pelo Sidecar
         ports:
         - containerPort: 9093
           name: web
-
-#      - name: config-reloader
-#        image: quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0 # Use uma tag de versão estável
-#        args:
-#          - --watch-interval=3m # Intervalo de verificação de alterações
-#          - --config-file=/etc/alertmanager/config.yaml
-#          - --webhook-url=http://127.0.0.1:9093/-/reload # Webhook para o Alertmanager
+        - containerPort: 6783
+          name: cluster
         volumeMounts:
-          - name: config-volume
-            mountPath: /etc/alertmanager/config
-            readOnly: true
+        - name: config-volume
+          mountPath: /etc/alertmanager
+        - name: storage
+          mountPath: /alertmanager
         resources:
           limits:
-            cpu: 500m
-            memory: 1Gi
-          requests:
-            cpu: 250m
-            memory: 500Mi
+            memory: "128Mi"
+            cpu: "500m"
+
+      # 2. Sidecar Container para Recarregamento (Reload)
+      # Nota: A imagem usa o ConfigMap como fonte e notifica o Alertmanager
+      - name: config-reloader
+        image: quay.io/prometheus-operator/prometheus-config-reloader:v0.87.0 # Use uma tag de versão estável
+        args:
+          - --watch-interval=3m # Intervalo de verificação de alterações
+          - --config-file=/etc/alertmanager/config.yaml
+          - --reload-url=http://127.0.0.1:9093/-/reload # Webhook para o Alertmanager
+        volumeMounts:
+          # Monta o ConfigMap que contém o config.yml
+          - name: config-volume
+            mountPath: /etc/alertmanager
+        resources:
+          limits:
+            memory: "32Mi"
+            cpu: "100m"
 
       volumes:
-        - name: config-volume
-          secret:
+      - name: config-volume
+        secret:
             secretName: alertmanager-config-secret
+  volumeClaimTemplates:
+  - metadata:
+      name: storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
