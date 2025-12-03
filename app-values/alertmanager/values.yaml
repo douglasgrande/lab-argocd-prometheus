@@ -5,8 +5,9 @@ metadata:
   namespace: monitoring
   labels:
     app.kubernetes.io/name: alertmanager
-  annotations:
-    checksum/config: "{{ include (print $.Template.BasePath) }}"
+
+configmapReload:
+  enabled: true
 
 spec:
   serviceName: alertmanager
@@ -14,8 +15,6 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: alertmanager
-  configmapReload:
-    enabled: true
 
   template:
     metadata:
