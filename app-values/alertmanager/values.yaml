@@ -2,65 +2,50 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: alertmanager
+  namespace: monitoring
   labels:
-    app: alertmanager
+    app.kubernetes.io/name: alertmanager
 spec:
-  serviceName: "alertmanager-headless"
+  serviceName: alertmanager
   replicas: 2
   selector:
     matchLabels:
-      app: alertmanager
+      app.kubernetes.io/name: alertmanager
   template:
     metadata:
       labels:
-        app: alertmanager
+        app.kubernetes.io/name: alertmanager
     spec:
       containers:
       - name: alertmanager
-        image: quay.io/prometheus/alertmanager:v0.27.0
+        image: quay.io/prometheus/alertmanager:v0.29.0
         args:
-        - --config.file=/etc/alertmanager/config.yml
-        - --storage.path=/alertmanager
-        - --web.listen-address=0.0.0.0:9093 
+          - --config.file=/etc/alertmanager/config/config.yaml
+          - --storage.path=/alertmanager
+          - --web.listen-address=0.0.0.0:9093 # A porta 9093 será acessada pelo Sidecar
         ports:
         - containerPort: 9093
           name: web
-        - containerPort: 6783
-          name: cluster
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/alertmanager
-        - name: storage
-          mountPath: /alertmanager
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
 
       - name: config-reloader
-        image: quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0
+        image: quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0 # Use uma tag de versão estável
         args:
-          - --watch-interval=1m
+          - --watch-interval=3m # Intervalo de verificação de alterações
           - --config-file=/etc/alertmanager/config.yml
-          - --webhook-url=http://127.0.0.1:9093/-/reload 
+          - --webhook-url=http://127.0.0.1:9093/-/reload # Webhook para o Alertmanager
         volumeMounts:
           - name: config-volume
-            mountPath: /etc/alertmanager
+            mountPath: /etc/alertmanager/config
+            readOnly: true
         resources:
           limits:
-            memory: "32Mi"
-            cpu: "100m"
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 500Mi
 
       volumes:
-      - name: config-volume
-        secret:
-          name: alertmanager-config-secret
-
-volumeClaimTemplates:
-  - metadata:
-      name: storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+        - name: config-volume
+          secret:
+            secretName: alertmanager-config-secret
