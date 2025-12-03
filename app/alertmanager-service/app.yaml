@@ -8,7 +8,7 @@ spec:
 
   source:
     repoURL: 'https://github.com/douglasgrande/lab-argocd-prometheus.git'
-    targetRevision: alertmanager-app
+    targetRevision: main
     path: app-values/alertmanager-service
 
   destination:
