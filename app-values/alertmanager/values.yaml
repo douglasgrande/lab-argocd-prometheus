@@ -31,7 +31,7 @@ spec:
         image: quay.io/prometheus-operator/prometheus-config-reloader:v0.70.0 # Use uma tag de versão estável
         args:
           - --watch-interval=3m # Intervalo de verificação de alterações
-          - --config-file=/etc/alertmanager/config.yml
+          - --config-file=/etc/alertmanager/config.yaml
           - --webhook-url=http://127.0.0.1:9093/-/reload # Webhook para o Alertmanager
         volumeMounts:
           - name: config-volume
